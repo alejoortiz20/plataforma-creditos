@@ -49,3 +49,18 @@ Para conservar datos reales: montar un **Render Disk** (plan de pago) o usar una
 
 ## Evidencia visual
 - `P8_prod_notificaciones.png` — "Mis notificaciones" en producción con la notificación consumida desde la cola.
+
+## Re-verificación con diseño renovado (2026-09-25, PR #10)
+
+Tras fusionar el rediseño "Fintech vibrante" (`feature/diseno-fintech`, PR #10) Render desplegó
+automáticamente desde `main`:
+
+- `/css/site.css` en producción contiene las variables del nuevo sistema (`--pc-primary`, gradientes índigo/violeta) → **deploy con UI nueva confirmado por HTTP**.
+- Flujo completo re-ejecutado en prod con la nueva interfaz: login analista → aprobar solicitud #3 →
+  login cliente2 → crear solicitud de **S/ 1,800.00** → alerta con **MessageId `0aadde7b-9b36-4df8-868c-210839456cd1`**
+  → "Mis notificaciones" muestra la notificación procesada en ~15 s (solo el consumidor de prod activo).
+- `P8_prod_notificaciones.png` re-tomada con el diseño nuevo (timeline de notificaciones, navbar gradiente).
+
+Nota operativa: durante las pruebas la app local y producción comparten la misma cola CloudAMQP; si
+ambos consumidores están activos, el mensaje lo toma cualquiera de los dos (ACK exclusivo). Para
+evidencias de prod conviene dejar la app local detenida.
