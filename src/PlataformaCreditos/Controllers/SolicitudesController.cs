@@ -14,11 +14,19 @@ public class SolicitudesController : Controller
 {
     private readonly ApplicationDbContext _db;
     private readonly SolicitudCacheServicio _cacheSolicitudes;
+    private readonly NotificacionPublisherService _publicador;
+    private readonly ILogger<SolicitudesController> _logger;
 
-    public SolicitudesController(ApplicationDbContext db, SolicitudCacheServicio cacheSolicitudes)
+    public SolicitudesController(
+        ApplicationDbContext db,
+        SolicitudCacheServicio cacheSolicitudes,
+        NotificacionPublisherService publicador,
+        ILogger<SolicitudesController> logger)
     {
         _db = db;
         _cacheSolicitudes = cacheSolicitudes;
+        _publicador = publicador;
+        _logger = logger;
     }
 
     [HttpGet]
@@ -160,13 +168,14 @@ public class SolicitudesController : Controller
             return View(modelo);
         }
 
-        _db.SolicitudesCredito.Add(new SolicitudCredito
+        var nueva = new SolicitudCredito
         {
             ClienteId = cliente.Id,
             MontoSolicitado = modelo.MontoSolicitado,
             FechaSolicitud = DateTime.UtcNow,
             Estado = EstadoSolicitud.Pendiente,
-        });
+        };
+        _db.SolicitudesCredito.Add(nueva);
 
         await _db.SaveChangesAsync();
 
@@ -175,6 +184,26 @@ public class SolicitudesController : Controller
         TempData["MensajeExito"] =
             "Tu solicitud de crédito fue registrada y quedó pendiente de evaluación: S/ " +
             modelo.MontoSolicitado.ToString("N2") + ".";
+
+        // Publicacion SOLO despues de validar y persistir correctamente.
+        try
+        {
+            var usuarioId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            var messageId = await _publicador.PublicarSolicitudRegistradaAsync(nueva.Id, usuarioId);
+            if (messageId != null)
+            {
+                TempData["MensajeExito"] += " Notificación en cola (MessageId: " + messageId + ").";
+            }
+        }
+        catch (Exception ex)
+        {
+            // Fallo de publicacion: la solicitud YA existe; se conserva, se registra el error
+            // y se advierte. Reenvio manual con el mismo MessageId (ver README P7).
+            _logger.LogError(ex, "[RabbitMQ] Fallo al publicar SolicitudRegistrada para solicitud {Id}. Reenviar con mismo MessageId.", nueva.Id);
+            TempData["Advertencia"] =
+                "Tu solicitud se registró correctamente, pero no se pudo publicar la notificación en la cola. " +
+                "Reintenta más tarde (reenvío manual con el mismo MessageId).";
+        }
 
         return RedirectToAction(nameof(Crear));
     }
