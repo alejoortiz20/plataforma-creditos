@@ -1,0 +1,45 @@
+@model NuevaSolicitudViewModel
+@{
+    ViewData["Title"] = "Nueva solicitud de crédito";
+}
+
+<h1>Nueva solicitud de crédito</h1>
+
+@if (TempData["MensajeExito"] is string mensajeExito)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @mensajeExito
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    </div>
+}
+
+<div class="alert alert-info">
+    <strong>Tus datos:</strong> ingresos mensuales @Model.IngresosMensuales.ToString("C") &middot;
+    monto máximo solicitable @Model.MontoMaximoSolicitable.ToString("C")
+    (10 veces tus ingresos).
+</div>
+
+<form asp-action="Crear" method="post" class="w-50">
+    @Html.AntiForgeryToken()
+
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <div class="mb-3">
+        <label asp-for="MontoSolicitado" class="form-label"></label>
+        <input asp-for="MontoSolicitado" class="form-control" asp-format="{0:N2}" />
+        <span asp-validation-for="MontoSolicitado" class="text-danger"></span>
+    </div>
+
+    @if (Model.MaximoDefinido)
+    {
+        <button type="submit" class="btn btn-primary">Registrar solicitud</button>
+    }
+    else
+    {
+        <p class="text-muted">No puedes registrar solicitudes porque no tienes un cliente activo asociado.</p>
+    }
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
