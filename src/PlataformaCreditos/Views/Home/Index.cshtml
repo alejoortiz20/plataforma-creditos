@@ -1,8 +1,63 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Inicio";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="hero">
+    <span class="hero-badge">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Crédito seguro &middot; Evaluación en tiempo real
+    </span>
+    <h1>Tus solicitudes de crédito, <span class="gradiente-texto">de principio a fin</span></h1>
+    <p class="lead">
+        Registra tu solicitud de crédito, sigue su estado al instante y recibe notificaciones
+        en el momento en que el analista decide. Sin recargar, sin esperas.
+    </p>
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <div class="d-flex flex-wrap gap-2 justify-content-center">
+            <a asp-controller="Solicitudes" asp-action="Crear" class="btn btn-primary btn-lg">
+                Nueva solicitud
+            </a>
+            <a asp-controller="Solicitudes" asp-action="Index" class="btn btn-outline-secondary btn-lg">
+                Mis solicitudes
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="d-flex flex-wrap gap-2 justify-content-center">
+            <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-primary btn-lg">Crear cuenta</a>
+            <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-secondary btn-lg">Ingresar</a>
+        </div>
+    }
+</div>
+
+<div class="row g-4 pb-4">
+    <div class="col-md-4">
+        <div class="card card-hover feature-card">
+            <span class="feature-icono">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+            </span>
+            <h5>Solicita en segundos</h5>
+            <p>Completa el formulario con tu monto y listo. Validamos tus ingresos y te damos respuesta del tope disponible.</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-hover feature-card">
+            <span class="feature-icono">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            </span>
+            <h5>Estado en vivo</h5>
+            <p>Un canal seguro en tiempo real te avisa al instante cuando tu solicitud es aprobada o rechazada, sin recargar la página.</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-hover feature-card">
+            <span class="feature-icono">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            </span>
+            <h5>Notificaciones confiables</h5>
+            <p>Cada evento queda registrado con acuse de recibo en la cola de mensajes: nada se pierde entre el analista y tú.</p>
+        </div>
+    </div>
 </div>

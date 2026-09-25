@@ -3,21 +3,25 @@
     ViewData["Title"] = "Mis solicitudes";
 }
 
-<h1>Mis solicitudes</h1>
+<div class="page-header">
+    <h1>Mis solicitudes</h1>
+    <p>Consulta y filtra el historial de tus solicitudes de crédito.</p>
+</div>
 
-<p>
-    Conexión en tiempo real: <span id="wss-estado" class="badge text-bg-secondary">Conectando…</span>
+<p class="wss-linea mb-3">
+    Estado del canal en vivo:
+    <span id="wss-estado" class="badge text-bg-secondary">Conectando…</span>
 </p>
 
 @if (!ViewData.ModelState.IsValid)
 {
     <div class="alert alert-danger">
-        <p class="mb-0">No se pudieron aplicar los filtros. Se muestran todas tus solicitudes:</p>
+        <p class="mb-1"><strong>No se pudieron aplicar los filtros.</strong> Se muestran todas tus solicitudes:</p>
         <div asp-validation-summary="All" class="mb-0"></div>
     </div>
 }
 
-<form method="get" asp-action="Index" class="card card-body mb-3">
+<form method="get" asp-action="Index" class="card card-body filtros-card mb-4">
     <div class="row g-3 align-items-end">
         <div class="col-md-3">
             <label asp-for="Estado" class="form-label"></label>
@@ -54,47 +58,56 @@
 
 @if (Model.Solicitudes.Count == 0)
 {
-    <p class="text-muted">No tienes solicitudes registradas.</p>
+    <div class="empty-state">
+        <span class="empty-icono">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </span>
+        <h5>No tienes solicitudes registradas</h5>
+        <p class="mb-3">Cuando registres una solicitud, aparecerá aquí con su estado en vivo.</p>
+        <a asp-action="Crear" class="btn btn-primary">Crear mi primera solicitud</a>
+    </div>
 }
 else
 {
-    <table class="table table-striped table-hover">
-        <thead>
-            <tr>
-                <th>Código</th>
-                <th>Monto solicitado</th>
-                <th>Fecha de solicitud</th>
-                <th>Estado</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var solicitud in Model.Solicitudes)
-            {
-                <tr data-solicitud-id="@solicitud.Id">
-                    <td>@solicitud.Id</td>
-                    <td>@solicitud.MontoSolicitado.ToString("C")</td>
-                    <td>@solicitud.FechaSolicitud.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
-                    <td>
-                        <span class="badge @(solicitud.Estado switch
-                        {
-                            PlataformaCreditos.Models.EstadoSolicitud.Aprobado => "text-bg-success",
-                            PlataformaCreditos.Models.EstadoSolicitud.Rechazado => "text-bg-danger",
-                            _ => "text-bg-secondary"
-                        })">@solicitud.Estado</span>
-                        @if (!string.IsNullOrEmpty(solicitud.MotivoRechazo))
-                        {
-                            <div data-motivo class="small text-danger">@solicitud.MotivoRechazo</div>
-                        }
-                    </td>
-                    <td>
-                        <a asp-action="Detalle" asp-route-id="@solicitud.Id" class="btn btn-sm btn-outline-primary">Ver detalle</a>
-                    </td>
+    <div class="table-responsive">
+        <table class="table table-striped hover">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Monto solicitado</th>
+                    <th>Fecha de solicitud</th>
+                    <th>Estado</th>
+                    <th></th>
                 </tr>
-            }
-        </tbody>
-    </table>
-    <p class="text-muted">Total: @Model.Solicitudes.Count</p>
+            </thead>
+            <tbody>
+                @foreach (var solicitud in Model.Solicitudes)
+                {
+                    <tr data-solicitud-id="@solicitud.Id">
+                        <td><strong>#@solicitud.Id</strong></td>
+                        <td>@solicitud.MontoSolicitado.ToString("C")</td>
+                        <td>@solicitud.FechaSolicitud.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>
+                            <span class="badge @(solicitud.Estado switch
+                            {
+                                PlataformaCreditos.Models.EstadoSolicitud.Aprobado => "text-bg-success",
+                                PlataformaCreditos.Models.EstadoSolicitud.Rechazado => "text-bg-danger",
+                                _ => "text-bg-secondary"
+                            })">@solicitud.Estado</span>
+                            @if (!string.IsNullOrEmpty(solicitud.MotivoRechazo))
+                            {
+                                <div data-motivo class="small text-danger">@solicitud.MotivoRechazo</div>
+                            }
+                        </td>
+                        <td>
+                            <a asp-action="Detalle" asp-route-id="@solicitud.Id" class="btn btn-sm btn-outline-primary">Ver detalle</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <p class="text-muted">Total: <strong>@Model.Solicitudes.Count</strong> solicitud(es)</p>
 }
 
 @section Scripts {

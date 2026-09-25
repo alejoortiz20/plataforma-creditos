@@ -42,3 +42,5 @@ las validaciones del panel (5× ingresos, motivo obligatorio, ya procesadas) sin
   {key, secret, channelId, message} (credenciales solo en appsettings.Development.json / env vars).
 - El botón del modal de aprobación en Chrome MCP no dispara submit; las aprobaciones de la prueba
   se hicieron con POST equivalente (mismo endpoint, misma validación antiforgery, 302 a /Analista).
+
+> **Nota:** las capturas de este documento fueron re-tomadas con el diseño renovado (UI "Fintech vibrante", rama `feature/diseno-fintech`).

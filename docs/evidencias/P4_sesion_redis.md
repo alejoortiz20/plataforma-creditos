@@ -30,3 +30,5 @@ Con eso la sesión emite `Set-Cookie: .PlataformaCreditos.Session`.
 ## Estado
 
 App ejecutada en local con Redis remoto (son-group...db.redis.io:19687). Build 0 errores.
+
+> **Nota:** las capturas de este documento fueron re-tomadas con el diseño renovado (UI "Fintech vibrante", rama `feature/diseno-fintech`).

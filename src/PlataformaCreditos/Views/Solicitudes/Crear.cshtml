@@ -3,12 +3,15 @@
     ViewData["Title"] = "Nueva solicitud de crédito";
 }
 
-<h1>Nueva solicitud de crédito</h1>
+<div class="page-header">
+    <h1>Nueva solicitud de crédito</h1>
+    <p>Indica el monto que necesitas y validamos tu capacidad de pago al instante.</p>
+</div>
 
 @if (TempData["MensajeExito"] is string mensajeExito)
 {
     <div class="alert alert-success alert-dismissible fade show" role="alert">
-        @mensajeExito
+        <strong>¡Listo!</strong> @mensajeExito
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
     </div>
 }
@@ -21,32 +24,66 @@
     </div>
 }
 
-<div class="alert alert-info">
-    <strong>Tus datos:</strong> ingresos mensuales @Model.IngresosMensuales.ToString("C") &middot;
-    monto máximo solicitable @Model.MontoMaximoSolicitable.ToString("C")
-    (10 veces tus ingresos).
-</div>
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-header">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                Formulario de solicitud
+            </div>
+            <div class="card-body">
+                <form asp-action="Crear" method="post">
+                    @Html.AntiForgeryToken()
 
-<form asp-action="Crear" method="post" class="w-50">
-    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="All" class="text-danger mb-3"></div>
 
-    <div asp-validation-summary="All" class="text-danger"></div>
+                    <div class="mb-4">
+                        <label asp-for="MontoSolicitado" class="form-label"></label>
+                        <div class="input-group">
+                            <span class="input-group-text">€</span>
+                            <input asp-for="MontoSolicitado" class="form-control" asp-format="{0:N2}" placeholder="0,00" />
+                        </div>
+                        <span asp-validation-for="MontoSolicitado" class="text-danger"></span>
+                    </div>
 
-    <div class="mb-3">
-        <label asp-for="MontoSolicitado" class="form-label"></label>
-        <input asp-for="MontoSolicitado" class="form-control" asp-format="{0:N2}" />
-        <span asp-validation-for="MontoSolicitado" class="text-danger"></span>
+                    @if (Model.MaximoDefinido)
+                    {
+                        <button type="submit" class="btn btn-primary btn-lg w-100">
+                            Registrar solicitud
+                        </button>
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning mb-0">
+                            No puedes registrar solicitudes porque no tienes un cliente activo asociado.
+                        </div>
+                    }
+                </form>
+            </div>
+        </div>
     </div>
-
-    @if (Model.MaximoDefinido)
-    {
-        <button type="submit" class="btn btn-primary">Registrar solicitud</button>
-    }
-    else
-    {
-        <p class="text-muted">No puedes registrar solicitudes porque no tienes un cliente activo asociado.</p>
-    }
-</form>
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Tus datos</h5>
+                <div class="d-flex flex-column gap-2 mb-3">
+                    <span class="chip-dato">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                        Ingresos: <strong>@Model.IngresosMensuales.ToString("C")</strong> / mes
+                    </span>
+                    <span class="chip-dato">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                        Tope: <strong>@Model.MontoMaximoSolicitable.ToString("C")</strong> (10× ingresos)
+                    </span>
+                </div>
+                <p class="text-muted small mb-0">
+                    Recuerda: para aprobar, el monto no puede superar <strong>5 veces</strong> tus
+                    ingresos mensuales. Solicita un monto responsable y acelera la evaluación.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
