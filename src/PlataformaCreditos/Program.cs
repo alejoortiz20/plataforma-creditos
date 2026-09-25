@@ -16,6 +16,10 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
+builder.Services.AddSignalR()
+    .AddJsonProtocol(opciones => opciones.PayloadSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter()));
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<NotificadorSolicitudesServicio>();
 
 var redisConnection = builder.Configuration["Redis:ConnectionString"];
 if (string.IsNullOrWhiteSpace(redisConnection))
@@ -70,6 +74,8 @@ app.MapControllerRoute(
 
 app.MapRazorPages()
    .WithStaticAssets();
+
+app.MapHub<PlataformaCreditos.Hubs.SolicitudesHub>("/hubs/solicitudes");
 
 await DbInitializer.InicializarAsync(app.Services, app.Configuration);
 

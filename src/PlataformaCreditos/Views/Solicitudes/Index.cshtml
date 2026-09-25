@@ -5,6 +5,10 @@
 
 <h1>Mis solicitudes</h1>
 
+<p>
+    Conexión en tiempo real: <span id="wss-estado" class="badge text-bg-secondary">Conectando…</span>
+</p>
+
 @if (!ViewData.ModelState.IsValid)
 {
     <div class="alert alert-danger">
@@ -67,7 +71,7 @@ else
         <tbody>
             @foreach (var solicitud in Model.Solicitudes)
             {
-                <tr>
+                <tr data-solicitud-id="@solicitud.Id">
                     <td>@solicitud.Id</td>
                     <td>@solicitud.MontoSolicitado.ToString("C")</td>
                     <td>@solicitud.FechaSolicitud.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
@@ -78,6 +82,10 @@ else
                             PlataformaCreditos.Models.EstadoSolicitud.Rechazado => "text-bg-danger",
                             _ => "text-bg-secondary"
                         })">@solicitud.Estado</span>
+                        @if (!string.IsNullOrEmpty(solicitud.MotivoRechazo))
+                        {
+                            <div data-motivo class="small text-danger">@solicitud.MotivoRechazo</div>
+                        }
                     </td>
                     <td>
                         <a asp-action="Detalle" asp-route-id="@solicitud.Id" class="btn btn-sm btn-outline-primary">Ver detalle</a>
@@ -91,4 +99,5 @@ else
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <partial name="_NotificacionesWss" />
 }

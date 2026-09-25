@@ -5,7 +5,11 @@
 
 <h1>Detalle de solicitud #@Model.Id</h1>
 
-<dl class="row">
+<p>
+    Conexión en tiempo real: <span id="wss-estado" class="badge text-bg-secondary">Conectando…</span>
+</p>
+
+<dl class="row" data-solicitud-id="@Model.Id">
     <dt class="col-sm-4">Monto solicitado</dt>
     <dd class="col-sm-8">@Model.MontoSolicitado.ToString("C")</dd>
 
@@ -13,7 +17,14 @@
     <dd class="col-sm-8">@Model.FechaSolicitud.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</dd>
 
     <dt class="col-sm-4">Estado</dt>
-    <dd class="col-sm-8">@Model.Estado</dd>
+    <dd class="col-sm-8">
+        <span class="badge @(Model.Estado switch
+        {
+            PlataformaCreditos.Models.EstadoSolicitud.Aprobado => "text-bg-success",
+            PlataformaCreditos.Models.EstadoSolicitud.Rechazado => "text-bg-danger",
+            _ => "text-bg-secondary"
+        })">@Model.Estado</span>
+    </dd>
 
     @if (Model.Estado == PlataformaCreditos.Models.EstadoSolicitud.Rechazado)
     {
@@ -23,3 +34,7 @@
 </dl>
 
 <a asp-action="Index" class="btn btn-outline-secondary">Volver a mis solicitudes</a>
+
+@section Scripts {
+    <partial name="_NotificacionesWss" />
+}

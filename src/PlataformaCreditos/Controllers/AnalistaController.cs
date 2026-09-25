@@ -1,8 +1,10 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using PlataformaCreditos.Data;
+using PlataformaCreditos.Hubs;
 using PlataformaCreditos.Models;
 using PlataformaCreditos.Services;
 
@@ -13,11 +15,19 @@ public class AnalistaController : Controller
 {
     private readonly ApplicationDbContext _db;
     private readonly SolicitudCacheServicio _cacheSolicitudes;
+    private readonly IHubContext<SolicitudesHub> _hub;
+    private readonly NotificadorSolicitudesServicio _notificador;
 
-    public AnalistaController(ApplicationDbContext db, SolicitudCacheServicio cacheSolicitudes)
+    public AnalistaController(
+        ApplicationDbContext db,
+        SolicitudCacheServicio cacheSolicitudes,
+        IHubContext<SolicitudesHub> hub,
+        NotificadorSolicitudesServicio notificador)
     {
         _db = db;
         _cacheSolicitudes = cacheSolicitudes;
+        _hub = hub;
+        _notificador = notificador;
     }
 
     [HttpGet]
@@ -25,7 +35,7 @@ public class AnalistaController : Controller
     {
         var pendientes = await _db.SolicitudesCredito
             .Include(s => s.Cliente)!
-                .ThenInclude(c => c.Usuario)
+                .ThenInclude(c => c!.Usuario)
             .Where(s => s.Estado == EstadoSolicitud.Pendiente)
             .OrderBy(s => s.FechaSolicitud)
             .ToListAsync();
@@ -61,7 +71,11 @@ public class AnalistaController : Controller
         solicitud.Estado = EstadoSolicitud.Aprobado;
         await _db.SaveChangesAsync();
 
-        await _cacheSolicitudes.InvalidarAsync(solicitud.Cliente.UsuarioId);
+        await _cacheSolicitudes.InvalidarAsync(solicitud.Cliente!.UsuarioId);
+
+        var evento = new SolicitudEstadoActual(solicitud.Id, solicitud.Estado, solicitud.MotivoRechazo);
+        await _hub.Clients.User(solicitud.Cliente!.UsuarioId).SendAsync("SolicitudEstadoActualizado", evento);
+        await _notificador.PublicarPieSocketAsync(solicitud.Cliente!.UsuarioId, solicitud.Id, solicitud.Estado.ToString(), solicitud.MotivoRechazo);
 
         TempData["ExitoAnalista"] = $"Solicitud #{id} aprobada.";
         return RedirectToAction(nameof(Index));
@@ -96,7 +110,11 @@ public class AnalistaController : Controller
         solicitud.MotivoRechazo = motivo.Trim();
         await _db.SaveChangesAsync();
 
-        await _cacheSolicitudes.InvalidarAsync(solicitud.Cliente.UsuarioId);
+        await _cacheSolicitudes.InvalidarAsync(solicitud.Cliente!.UsuarioId);
+
+        var evento = new SolicitudEstadoActual(solicitud.Id, solicitud.Estado, solicitud.MotivoRechazo);
+        await _hub.Clients.User(solicitud.Cliente!.UsuarioId).SendAsync("SolicitudEstadoActualizado", evento);
+        await _notificador.PublicarPieSocketAsync(solicitud.Cliente!.UsuarioId, solicitud.Id, solicitud.Estado.ToString(), solicitud.MotivoRechazo);
 
         TempData["ExitoAnalista"] = $"Solicitud #{id} rechazada.";
         return RedirectToAction(nameof(Index));
