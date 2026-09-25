@@ -1,0 +1,25 @@
+PRUEBA DE CONEXIONES - Fase 0
+==============================
+fecha: 2026-09-25 04:17:21 UTC
+
+redis url : redis://default:***@son-group-statement-44224.db.redis.io:19687
+amqp  url : amqps://morhqzjt:***@campbell.lmq.cloudamqp.com/morhqzjt
+piesocket : cluster=free.blr2 (secret enmascarado)
+algolia   : app=16J6L9NEJX (key enmascarada)
+
+NOTA ALGOLIA
+============
+El AppID 16J6L9NEJX no resuelve en DNS: algolia.net entrega un CNAME
+interno (up.*.api.algolia.net) sin registro A final; un AppID de referencia
+real (latency-dsn.algolia.net) si resuelve completo. Incluso un segundo
+AppID de ejemplo (k6ac9rzjou) no resuelve, lo que indica que los AppIds de
+ejemplo/documentacion ya no tienen DNS publicado vía NS1 para resolvers
+públicos, o que el AppID provisto no está activo. Decisión del usuario:
+NO integrar Algolia en P2 (el examen no lo exige). Evidencia eliminada.
+
+RESULTADOS
+==========
+redis: OK
+amqp: OK
+piesocket: OK
+algolia: NO SE USA (descartado)
