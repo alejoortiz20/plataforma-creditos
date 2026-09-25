@@ -34,6 +34,14 @@
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-controller="Solicitudes" asp-action="Crear">Nueva solicitud</a>
                             </li>
+                            @if (Context.Session.GetInt32("UltimaSolicitudId") is int ultimaSolicitudId)
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Solicitudes" asp-action="Detalle" asp-route-id="@ultimaSolicitudId">
+                                        Ver última solicitud @Context.Session.GetString("UltimaSolicitudMonto")
+                                    </a>
+                                </li>
+                            }
                         }
                     </ul>
                     <partial name="_LoginPartial" />
