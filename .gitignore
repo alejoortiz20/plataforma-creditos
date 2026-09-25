@@ -1,0 +1,36 @@
+# .NET / Visual Studio
+bin/
+obj/
+*.user
+*.suo
+.vs/
+*.swp
+
+# Base de datos SQLite (nunca en el repo)
+*.db
+*.db-shm
+*.db-wal
+app.db
+
+# Configuración local con credenciales
+appsettings.Development.json
+appsettings.Local.json
+
+# Credenciales / secretos
+APIKEYS*
+APIKEYS (NO COMPARTIR).txt
+CUENTAS.txt
+*.pem
+*.pfx
+secrets.json
+
+# Node
+node_modules/
+
+# Sistema
+Thumbs.db
+.DS_Store
+
+# Logs
+logs/
+*.log
