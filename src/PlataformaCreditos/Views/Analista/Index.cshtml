@@ -1,0 +1,103 @@
+@model List<PlataformaCreditos.Models.SolicitudCredito>
+@{
+    ViewData["Title"] = "Panel de analista";
+}
+
+<h1>Panel de analista</h1>
+<p class="text-muted">Solicitudes de crédito pendientes de evaluación.</p>
+
+@if (TempData["ExitoAnalista"] is string exito)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @exito
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+@if (TempData["ErrorAnalista"] is string error)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @error
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (Model.Count == 0)
+{
+    <div class="alert alert-info">No hay solicitudes pendientes.</div>
+}
+else
+{
+    <table class="table table-striped align-middle">
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Cliente</th>
+                <th>Monto solicitado</th>
+                <th>Ingresos mensuales</th>
+                <th>Fecha</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var s in Model)
+            {
+                <tr>
+                    <td>@s.Id</td>
+                    <td>@(s.Cliente?.Usuario?.UserName ?? s.Cliente?.UsuarioId ?? "-")</td>
+                    <td>@s.MontoSolicitado.ToString("C")</td>
+                    <td>@(s.Cliente != null ? s.Cliente.IngresosMensuales.ToString("C") : "-")</td>
+                    <td>@s.FechaSolicitud.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>
+                        <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal"
+                                data-bs-target="#aprobar-@s.Id">Aprobar</button>
+                        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal"
+                                data-bs-target="#rechazar-@s.Id">Rechazar</button>
+                    </td>
+                </tr>
+
+                <div class="modal fade" id="aprobar-@s.Id" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <form asp-controller="Analista" asp-action="Aprobar" asp-route-id="@s.Id" method="post" class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Aprobar solicitud #@s.Id</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>¿Confirmas la aprobación de la solicitud por <strong>@s.MontoSolicitado.ToString("C")</strong>?</p>
+                                @if (!PlataformaCreditos.Models.ReglasCredito.EsAprobable(s.MontoSolicitado, s.Cliente!.IngresosMensuales))
+                                {
+                                    <div class="alert alert-warning mb-0">
+                                        El monto supera 5 veces los ingresos del cliente; no se podrá aprobar.
+                                    </div>
+                                }
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                <button type="submit" class="btn btn-success">Confirmar aprobación</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="rechazar-@s.Id" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <form asp-controller="Analista" asp-action="Rechazar" asp-route-id="@s.Id" method="post" class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Rechazar solicitud #@s.Id</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <label class="form-label" for="motivo-@s.Id">Motivo de rechazo (obligatorio)</label>
+                                <textarea id="motivo-@s.Id" name="motivo" class="form-control" rows="3" required></textarea>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                <button type="submit" class="btn btn-danger">Confirmar rechazo</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            }
+        </tbody>
+    </table>
+}
