@@ -29,3 +29,6 @@
 - `docs/evidencias/P3_solicitud_creada.png`
 - `docs/evidencias/P3_detalle_creada.png`
 - `docs/evidencias/P3_sin_cliente.png`
+
+
+> **Nota:** las capturas de este documento fueron re-tomadas con el diseño renovado (UI "Fintech vibrante", rama `feature/diseno-fintech`).

@@ -52,3 +52,6 @@ Rama: `feature/cloudmq-notificaciones` · PR #7 · Cola durable `solicitudes.not
 1. **Fallo de publicación**: reintentar publish con el **mismo MessageId** (la solicitud ya existe en BD).
 2. **Fallo de procesamiento**: mensaje queda sin ACK → requeue manual desde CloudAMQP (no hay reintentos automátios infinitos).
 3. **Mensaje inválido**: se descarta sin reencolar (evidencia en logs); corregir y publicar uno nuevo.
+
+
+> **Nota:** las capturas de este documento fueron re-tomadas con el diseño renovado (UI "Fintech vibrante", rama `feature/diseno-fintech`).

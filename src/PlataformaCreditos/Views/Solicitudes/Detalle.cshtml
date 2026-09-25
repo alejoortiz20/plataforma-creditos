@@ -3,37 +3,60 @@
     ViewData["Title"] = "Detalle de solicitud";
 }
 
-<h1>Detalle de solicitud #@Model.Id</h1>
+<div class="page-header">
+    <h1>Detalle de solicitud #@Model.Id</h1>
+    <p>Monto solicitado el @Model.FechaSolicitud.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</p>
+</div>
 
-<p>
-    Conexión en tiempo real: <span id="wss-estado" class="badge text-bg-secondary">Conectando…</span>
+<p class="wss-linea mb-3">
+    Estado del canal en vivo:
+    <span id="wss-estado" class="badge text-bg-secondary">Conectando…</span>
 </p>
 
-<dl class="row" data-solicitud-id="@Model.Id">
-    <dt class="col-sm-4">Monto solicitado</dt>
-    <dd class="col-sm-8">@Model.MontoSolicitado.ToString("C")</dd>
+<div class="row g-4">
+    <div class="col-lg-7">
+        <dl class="row mb-0" data-solicitud-id="@Model.Id">
+            <dt class="col-sm-4">Monto solicitado</dt>
+            <dd class="col-sm-8">
+                <span class="monto-destacado">@Model.MontoSolicitado.ToString("C")</span>
+            </dd>
 
-    <dt class="col-sm-4">Fecha de solicitud</dt>
-    <dd class="col-sm-8">@Model.FechaSolicitud.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</dd>
+            <dt class="col-sm-4">Fecha de solicitud</dt>
+            <dd class="col-sm-8">@Model.FechaSolicitud.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</dd>
 
-    <dt class="col-sm-4">Estado</dt>
-    <dd class="col-sm-8">
-        <span class="badge @(Model.Estado switch
-        {
-            PlataformaCreditos.Models.EstadoSolicitud.Aprobado => "text-bg-success",
-            PlataformaCreditos.Models.EstadoSolicitud.Rechazado => "text-bg-danger",
-            _ => "text-bg-secondary"
-        })">@Model.Estado</span>
-    </dd>
+            <dt class="col-sm-4">Estado</dt>
+            <dd class="col-sm-8">
+                <span class="badge @(Model.Estado switch
+                {
+                    PlataformaCreditos.Models.EstadoSolicitud.Aprobado => "text-bg-success",
+                    PlataformaCreditos.Models.EstadoSolicitud.Rechazado => "text-bg-danger",
+                    _ => "text-bg-secondary"
+                })">@Model.Estado</span>
+            </dd>
 
-    @if (Model.Estado == PlataformaCreditos.Models.EstadoSolicitud.Rechazado)
-    {
-        <dt class="col-sm-4">Motivo de rechazo</dt>
-        <dd class="col-sm-8">@Model.MotivoRechazo</dd>
-    }
-</dl>
-
-<a asp-action="Index" class="btn btn-outline-secondary">Volver a mis solicitudes</a>
+            @if (Model.Estado == PlataformaCreditos.Models.EstadoSolicitud.Rechazado)
+            {
+                <dt class="col-sm-4">Motivo de rechazo</dt>
+                <dd class="col-sm-8" data-motivo>@Model.MotivoRechazo</dd>
+            }
+        </dl>
+    </div>
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">¿Qué sigue?</h5>
+                <p class="text-muted mb-3">
+                    Un analista revisará tu solicitud. Recibirás una notificación en el momento
+                    en que se tome la decisión, y el estado se actualizará aquí automáticamente.
+                </p>
+                <div class="d-flex flex-wrap gap-2">
+                    <a asp-action="Index" class="btn btn-outline-secondary">Volver a mis solicitudes</a>
+                    <a asp-action="Crear" class="btn btn-primary">Nueva solicitud</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 @section Scripts {
     <partial name="_NotificacionesWss" />

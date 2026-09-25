@@ -28,3 +28,5 @@ Rama: `feature/catalogo-solicitudes`
 ## Capturas
 - `P2_lista.png` — filtros + tabla (cliente1, 1 solicitud Pendiente).
 - `P2_detalle.png` — vista detalle.
+
+> **Nota:** las capturas de este documento fueron re-tomadas con el diseño renovado (UI "Fintech vibrante", rama `feature/diseno-fintech`).

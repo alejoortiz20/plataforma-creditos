@@ -35,3 +35,5 @@ Rama: `feature/panel-analista` · Merge en main: PR #5
 - `P5_aprobacion_denegada.png` — error por superar 5× ingresos.
 - `P5_panel_final.png` — panel tras aprobar/rechazar.
 - Estado BD final: #1,#2,#3,#5 Aprobado; #4 Rechazado con motivo.
+
+> **Nota:** las capturas de este documento fueron re-tomadas con el diseño renovado (UI "Fintech vibrante", rama `feature/diseno-fintech`).
