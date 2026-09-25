@@ -19,7 +19,9 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddSignalR()
     .AddJsonProtocol(opciones => opciones.PayloadSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter()));
 builder.Services.AddHttpClient();
-builder.Services.AddScoped<NotificadorSolicitudesServicio>();
+    builder.Services.AddScoped<NotificadorSolicitudesServicio>();
+    builder.Services.AddScoped<NotificacionPublisherService>();
+    builder.Services.AddHostedService<NotificacionConsumerService>();
 
 var redisConnection = builder.Configuration["Redis:ConnectionString"];
 if (string.IsNullOrWhiteSpace(redisConnection))
@@ -75,7 +77,7 @@ app.MapControllerRoute(
 app.MapRazorPages()
    .WithStaticAssets();
 
-app.MapHub<PlataformaCreditos.Hubs.SolicitudesHub>("/hubs/solicitudes");
+    app.MapHub<PlataformaCreditos.Hubs.SolicitudesHub>("/hubs/solicitudes");
 
 await DbInitializer.InicializarAsync(app.Services, app.Configuration);
 

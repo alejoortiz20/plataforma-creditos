@@ -34,6 +34,9 @@
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-controller="Solicitudes" asp-action="Crear">Nueva solicitud</a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Notificaciones" asp-action="Index">Mis notificaciones</a>
+                            </li>
                             @if (User.IsInRole("Analista"))
                             {
                                 <li class="nav-item">

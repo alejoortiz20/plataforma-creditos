@@ -13,6 +13,14 @@
     </div>
 }
 
+@if (TempData["Advertencia"] is string advertencia)
+{
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        @advertencia
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    </div>
+}
+
 <div class="alert alert-info">
     <strong>Tus datos:</strong> ingresos mensuales @Model.IngresosMensuales.ToString("C") &middot;
     monto máximo solicitable @Model.MontoMaximoSolicitable.ToString("C")
