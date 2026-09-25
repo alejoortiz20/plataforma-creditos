@@ -1,0 +1,72 @@
+@model dynamic
+<script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@8.0.7/dist/browser/signalr.min.js"></script>
+<script>
+    (function () {
+        const mapEstado = {
+            'Pendiente': ['Pendiente', 'text-bg-secondary'],
+            'Aprobado': ['Aprobado', 'text-bg-success'],
+            'Rechazado': ['Rechazado', 'text-bg-danger']
+        };
+
+        function aplicar(ev) {
+            const filas = document.querySelectorAll('[data-solicitud-id]');
+            filas.forEach(function (fila) {
+                if (fila.getAttribute('data-solicitud-id') === String(ev.SolicitudId ?? ev.solicitudId)) {
+                    const estado = ev.Estado ?? ev.estado;
+                    const badge = fila.querySelector('.badge');
+                    if (badge) {
+                        const cfg = mapEstado[estado] || [estado, 'text-bg-secondary'];
+                        badge.className = 'badge ' + cfg[1];
+                        badge.textContent = cfg[0];
+                    }
+                    const motivo = fila.querySelector('[data-motivo]');
+                    if (motivo && (ev.MotivoRechazo ?? ev.motivoRechazo)) {
+                        motivo.textContent = ev.MotivoRechazo ?? ev.motivoRechazo;
+                    }
+                    if (typeof window.__p6Flash === 'function') {
+                        window.__p6Flash('Solicitud #' + (ev.SolicitudId ?? ev.solicitudId) + ' → ' + estado);
+                    }
+                }
+            });
+        }
+
+        async function consultarEstadoVigente() {
+            const ids = [];
+            document.querySelectorAll('[data-solicitud-id]').forEach(function (el) {
+                ids.push(el.getAttribute('data-solicitud-id'));
+            });
+            for (const id of ids) {
+                try {
+                    const res = await hub.invoke('ConsultarEstadoVigente', Number(id));
+                    if (res) aplicar(res);
+                } catch (e) { /* noop */ }
+            }
+        }
+
+        const status = document.getElementById('wss-estado');
+        function pintar(texto, clase) {
+            if (status) { status.textContent = texto; status.className = 'badge ' + clase; }
+        }
+
+        const hub = new signalR.HubConnectionBuilder()
+            .withUrl('/hubs/solicitudes')
+            .withAutomaticReconnect()
+            .build();
+
+        hub.on('SolicitudEstadoActualizado', function (ev) { aplicar(ev); });
+
+        hub.onreconnecting(function () { pintar('Reconectando…', 'text-bg-warning'); });
+        hub.onreconnected(function () {
+            pintar('Conectado', 'text-bg-success');
+            consultarEstadoVigente();
+        });
+        hub.onclose(function () { pintar('Desconectado', 'text-bg-danger'); });
+
+        hub.start()
+            .then(function () { pintar('Conectado', 'text-bg-success'); })
+            .catch(function (err) {
+                pintar('No conectado', 'text-bg-danger');
+                console.error('SignalR:', err);
+            });
+    })();
+</script>
