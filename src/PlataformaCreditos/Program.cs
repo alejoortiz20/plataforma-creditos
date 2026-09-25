@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using PlataformaCreditos;
 using PlataformaCreditos.Data;
+using PlataformaCreditos.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +17,33 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
 
+var redisConnection = builder.Configuration["Redis:ConnectionString"];
+if (string.IsNullOrWhiteSpace(redisConnection))
+{
+    builder.Services.AddDistributedMemoryCache();
+    builder.Services.AddDataProtection();
+    Console.WriteLine("[Redis] Sin cadena de conexion: se usa cache en memoria.");
+}
+else
+{
+    builder.Services.AddStackExchangeRedisCache(options =>
+    {
+        options.Configuration = redisConnection;
+        options.InstanceName = "plataforma-creditos:";
+    });
+    Console.WriteLine("[Redis] Cache y sesion conectados a Redis.");
+}
+
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+    options.Cookie.Name = ".PlataformaCreditos.Session";
+});
+
+builder.Services.AddScoped<SolicitudCacheServicio>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -28,6 +56,8 @@ else
     app.UseExceptionHandler("/Home/Error");
 }
 app.UseRouting();
+
+app.UseSession();
 
 app.UseAuthorization();
 

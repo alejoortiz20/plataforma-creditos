@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using PlataformaCreditos.Data;
 using PlataformaCreditos.Models;
 using PlataformaCreditos.Models.ViewModels;
+using PlataformaCreditos.Services;
 
 namespace PlataformaCreditos.Controllers;
 
@@ -12,56 +13,65 @@ namespace PlataformaCreditos.Controllers;
 public class SolicitudesController : Controller
 {
     private readonly ApplicationDbContext _db;
+    private readonly SolicitudCacheServicio _cacheSolicitudes;
 
-    public SolicitudesController(ApplicationDbContext db)
+    public SolicitudesController(ApplicationDbContext db, SolicitudCacheServicio cacheSolicitudes)
     {
         _db = db;
+        _cacheSolicitudes = cacheSolicitudes;
     }
 
     [HttpGet]
     public async Task<IActionResult> Index(SolicitudesViewModel modelo)
     {
-        var usuarioId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var consulta = _db.SolicitudesCredito
-            .Include(s => s.Cliente)
-            .Where(s => s.Cliente!.UsuarioId == usuarioId);
+        var usuarioId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+
+        var baseList = await _cacheSolicitudes.ObtenerAsync(usuarioId);
+        if (baseList == null)
+        {
+            baseList = await _db.SolicitudesCredito
+                .Where(s => s.Cliente!.UsuarioId == usuarioId)
+                .OrderByDescending(s => s.FechaSolicitud)
+                .ToListAsync();
+            await _cacheSolicitudes.EstablecerAsync(usuarioId, baseList);
+        }
 
         if (!ModelState.IsValid)
         {
-            modelo.Solicitudes = await consulta
-                .OrderByDescending(s => s.FechaSolicitud)
-                .ToListAsync();
+            modelo.Solicitudes = baseList;
             return View(modelo);
         }
 
+        var filtradas = baseList.AsEnumerable();
+
         if (modelo.Estado.HasValue)
         {
-            consulta = consulta.Where(s => s.Estado == modelo.Estado.Value);
+            filtradas = filtradas.Where(s => s.Estado == modelo.Estado.Value);
         }
 
         if (modelo.MontoMinimo.HasValue)
         {
-            consulta = consulta.Where(s => s.MontoSolicitado >= modelo.MontoMinimo.Value);
+            filtradas = filtradas.Where(s => s.MontoSolicitado >= modelo.MontoMinimo.Value);
         }
 
         if (modelo.MontoMaximo.HasValue)
         {
-            consulta = consulta.Where(s => s.MontoSolicitado <= modelo.MontoMaximo.Value);
+            filtradas = filtradas.Where(s => s.MontoSolicitado <= modelo.MontoMaximo.Value);
         }
 
         if (modelo.FechaDesde.HasValue)
         {
-            consulta = consulta.Where(s => s.FechaSolicitud >= modelo.FechaDesde.Value.Date);
+            filtradas = filtradas.Where(s => s.FechaSolicitud >= modelo.FechaDesde.Value.Date);
         }
 
         if (modelo.FechaHasta.HasValue)
         {
-            consulta = consulta.Where(s => s.FechaSolicitud <= modelo.FechaHasta.Value.Date.AddDays(1));
+            filtradas = filtradas.Where(s => s.FechaSolicitud <= modelo.FechaHasta.Value.Date.AddDays(1));
         }
 
-        modelo.Solicitudes = await consulta
+        modelo.Solicitudes = filtradas
             .OrderByDescending(s => s.FechaSolicitud)
-            .ToListAsync();
+            .ToList();
 
         return View(modelo);
     }
@@ -78,6 +88,9 @@ public class SolicitudesController : Controller
         {
             return NotFound();
         }
+
+        HttpContext.Session.SetInt32("UltimaSolicitudId", solicitud.Id);
+        HttpContext.Session.SetString("UltimaSolicitudMonto", solicitud.MontoSolicitado.ToString("N2"));
 
         return View(solicitud);
     }
@@ -156,6 +169,8 @@ public class SolicitudesController : Controller
         });
 
         await _db.SaveChangesAsync();
+
+        await _cacheSolicitudes.InvalidarAsync(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
         TempData["MensajeExito"] =
             "Tu solicitud de crédito fue registrada y quedó pendiente de evaluación: S/ " +
