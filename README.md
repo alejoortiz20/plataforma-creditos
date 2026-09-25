@@ -54,7 +54,7 @@ sh -c "ASPNETCORE_URLS=http://0.0.0.0:$PORT dotnet PlataformaCreditos.dll"
 
 ## Despliegue en Render
 
-- **URL:** _PENDIENTE_ (https://plataforma-creditos.onrender.com)
+- **URL:** **https://plataforma-creditos-1qwp.onrender.com**
 - **Rama:** `main` · auto-deploy activado · **1 sola instancia** (el consumidor de RabbitMQ corre dentro del mismo proceso, no necesita servicio aparte)
 - **Runtime:** Docker (`Dockerfile` multi-stage: `sdk:10.0` → `aspnet:10.0`)
 - **Región:** Oregon · plan free
